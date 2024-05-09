@@ -1,2 +1,0 @@
-/usr/bin/ar qc librestAdapter.a CMakeFiles/restAdapter.dir/restAdapter.cpp.o
-/usr/bin/ranlib librestAdapter.a

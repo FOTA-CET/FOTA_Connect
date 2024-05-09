@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcloudUrl.a CMakeFiles/cloudUrl.dir/cloudUrl.cpp.o
-/usr/bin/ranlib libcloudUrl.a

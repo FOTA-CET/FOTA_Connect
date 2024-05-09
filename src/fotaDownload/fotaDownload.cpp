@@ -31,16 +31,72 @@ namespace fotaDownload
 
     Status getNameFirmware(std::string& nameFirmware)
     {
+        std::string urlFIRMWARE = "https://hex-tung-b8ae7-default-rtdb.firebaseio.com/FIRMWARE.json?BXywcJZCAWi1tiJY0z5hoWz2YwGiVCPqiSOdECW5";
 
+        std::string metadataRespone;
+        if(restAdapter::handleRequest(urlFIRMWARE, &metadataRespone) != CURLcode::CURLE_OK) throw -1;
+
+        Json::CharReaderBuilder builder;
+        Json::CharReader* reader = builder.newCharReader();
+        Json::Value root;
+        std::string errs;
+
+        bool parsingSuccessful = reader->parse(metadataRespone.c_str(), metadataRespone.c_str() + metadataRespone.size(), &root, &errs);
+        delete reader;
+
+        if (!parsingSuccessful) {
+            std::cerr << "Failed to parse JSON: " << errs << std::endl;
+        }
+
+        std::string MCUname = root["FIRMWARE"].asString();
+
+        if(strcmp(MCUname.c_str(),"NONE") == 0) return Status::ERROR;
+        std::string urlMCU = "https://hex-tung-b8ae7-default-rtdb.firebaseio.com/" + MCUname + ".json?BXywcJZCAWi1tiJY0z5hoWz2YwGiVCPqiSOdECW5";
+
+        std::string metadataRespone_MCU;
+        if(restAdapter::handleRequest(urlMCU, &metadataRespone_MCU) != CURLcode::CURLE_OK) throw -1;
+
+        Json::CharReaderBuilder builder_2;
+        Json::CharReader* reader_2 = builder.newCharReader();
+        Json::Value root_2;
+        std::string errs_2;
+
+        bool parsingSuccessful_2 = reader_2->parse(metadataRespone_MCU.c_str(), metadataRespone_MCU.c_str() + metadataRespone_MCU.size(), &root_2, &errs_2);
+        delete reader_2;
+
+        if (!parsingSuccessful_2) {
+            std::cerr << "Failed to parse JSON: " << errs_2 << std::endl;
+        }
+
+        std::string version = root_2["version"].asString();
+
+        nameFirmware = MCUname;
+        nameFirmware += "_";
+        nameFirmware += version;
+        return Status::OK;
     }
 
-    cloudUrl::ECU getECUName(std::string& nameFirmware)
+    std::string getECUName(std::string& nameFirmware)
     {
-        
+        std::string ECUname = nameFirmware.substr(0,nameFirmware.find('_'));
+        return ECUname;
     }
 
-    Status checkNewestState(cloudUrl::ECU ecu, std::string& fileName)
+    std::string getFirmwareVersion(std::string& nameFirmware)
     {
+        std::string firmwareVersion = nameFirmware.substr(nameFirmware.find('_') + 1);
+        return firmwareVersion;
+    }
 
+    Status checkNewestState(std::string& fileName)
+    {
+        std::ifstream file("/home/thanhtung/Desktop/FOTA_Connect/firmware_list.json");
+        Json::Value root;
+        file >> root;
+        if (root.isMember(getECUName(fileName))) {
+        std::string result = root[getECUName(fileName)].asString();
+        if(strcmp(getFirmwareVersion(fileName).c_str(), result.c_str()) != 0) return Status::OK;
+        else return Status::ERROR;
+        }
     }
 }
