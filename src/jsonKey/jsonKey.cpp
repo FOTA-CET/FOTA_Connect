@@ -1,7 +1,6 @@
 #include "jsonKey.h"
 
-namespace jsonKey{
-std::string getDownloadToken(const std::string& jsonString) {
+std::string jsonKey::getDownloadToken(const std::string& jsonString) {
     Json::CharReaderBuilder builder;
     Json::CharReader* reader = builder.newCharReader();
     Json::Value root;
@@ -24,7 +23,7 @@ std::string getDownloadToken(const std::string& jsonString) {
 }
 
 // Function to read the service account JSON file and extract the private key
-std::string getPrivateKey(const std::string& serviceAccountFile) {
+std::string jsonKey::getPrivateKey(const std::string& serviceAccountFile) {
   std::ifstream file(serviceAccountFile);
   if (!file.is_open()) {
     std::cerr << "Failed to open service account file." << std::endl;
@@ -34,5 +33,4 @@ std::string getPrivateKey(const std::string& serviceAccountFile) {
   Json::Value root;
   file >> root;
   return root["private_key"].asString();
-}
 }

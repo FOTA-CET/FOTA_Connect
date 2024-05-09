@@ -10,14 +10,16 @@
 #include <json/json.h> 
 #include <string.h>
 
-namespace fotaDownload
+enum class Status{OK, ERROR};
+class fotaDownload
 {
-    enum class Status{OK, ERROR};
-    Status download(cloudUrl::ECU ecu, std::string& fileName, std::string& path);
-    Status getNameFirmware(std::string& nameFirmware);
-    Status checkNewestState(std::string& fileName);
-    std::string getECUName(std::string& nameFirmware);
-    std::string getFirmwareVersion(std::string& nameFirmware);
+    private:
+        std::string getECUName(std::string& nameFirmware);
+        std::string getFirmwareVersion(std::string& nameFirmware);
+    public:
+        Status getNameFirmware(std::string& nameFirmware);
+        Status download(ECU ecu, std::string& fileName, std::string& path);
+        Status checkNewestState(std::string& fileName);
 
-}
+};
 #endif // include guard

@@ -4,9 +4,10 @@
 #include <iostream>
 #include <json/json.h> 
 #include <fstream>
-namespace jsonKey
+class jsonKey
 {
-    std::string getDownloadToken(const std::string& jsonString);
-    std::string getPrivateKey(const std::string& serviceAccountFile);
-}
+    public:
+        static std::string getDownloadToken(const std::string& jsonString);
+        static std::string getPrivateKey(const std::string& serviceAccountFile);
+};
 #endif

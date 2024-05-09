@@ -4,7 +4,8 @@
 int main()
 {
   std::string name;
-  if(fotaDownload::getNameFirmware(name) == fotaDownload::Status::ERROR)
+  fotaDownload object_fotaDownload;
+  if(object_fotaDownload.getNameFirmware(name) == Status::ERROR)
   {
     std::cout << "No new firmware\n";
   }
@@ -13,7 +14,7 @@ int main()
     std::cout << "Found new firmware:\t";
     std::cout << name << std::endl;
     std::cout << "Checking firmware\n";
-    if(fotaDownload::checkNewestState(name) != fotaDownload::Status::OK)
+    if(object_fotaDownload.checkNewestState(name) != Status::OK)
     {
       std::cout << "Firmware is not valid\n";
     }
@@ -21,7 +22,7 @@ int main()
     {
       std::cout << "Check OK!\n";
       std::string filePath ="/home/thanhtung/Desktop/FOTA_Connect/src/" + name + ".hex";
-      if(fotaDownload::download(cloudUrl::ECU::ATMEGA328P, name, filePath) == fotaDownload::Status::OK)
+      if(object_fotaDownload.download(ECU::ATMEGA328P, name, filePath) == Status::OK)
       {
         std::cout << "Update success\n";
       }
