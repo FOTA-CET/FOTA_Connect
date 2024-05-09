@@ -1,0 +1,2 @@
+/usr/bin/ar qc libjsonKey.a CMakeFiles/jsonKey.dir/jsonKey.cpp.o
+/usr/bin/ranlib libjsonKey.a
