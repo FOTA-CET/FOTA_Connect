@@ -57,7 +57,7 @@ void fotaConnectApp::start()
   std::cout << "Checking firmware\n";
   if(object_fotaDownload.checkNewestState(name) != Status::OK)
   {
-    std::cout << "Firmware is not valid\n";
+    std::cout << "Firmware already exists.\n";
   }
   else
   {
