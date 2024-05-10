@@ -6,6 +6,7 @@ add_subdirectory(src/cloudUrl)
 add_subdirectory(src/restAdapter)
 add_subdirectory(src/jsonKey)
 add_subdirectory(src/fotaDownload)
+add_subdirectory(src/fota_connect_app)
 
 # External librarries
 find_package(PkgConfig REQUIRED)
@@ -17,4 +18,4 @@ include_directories(${JSONCPP_INCLUDE_DIRS})
 
 add_executable(main src/main.cpp)
 
-target_link_libraries(main fotaDownload cloudUrl jsonKey restAdapter ${CURL_LIBRARIES} ${JSONCPP_LIBRARIES})
+target_link_libraries(main fotaConnectApp fotaDownload cloudUrl jsonKey restAdapter ${CURL_LIBRARIES} ${JSONCPP_LIBRARIES})

@@ -20,6 +20,7 @@ class fotaDownload
         Status getNameFirmware(std::string& nameFirmware);
         Status download(ECU ecu, std::string& fileName, std::string& path);
         Status checkNewestState(std::string& fileName);
+        bool updateFirmwareList(std::string& newName);
 
 };
 #endif // include guard

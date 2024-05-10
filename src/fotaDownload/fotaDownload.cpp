@@ -98,3 +98,19 @@ Status fotaDownload::checkNewestState(std::string& fileName)
     }
     return Status::ERROR;
 }
+
+bool fotaDownload::updateFirmwareList(std::string& newName)
+{
+    std::ifstream file("/home/thanhtung/Desktop/FOTA_Connect/firmware_list.json");
+    Json::Value root;
+    file >> root;
+
+    // Chỉnh sửa dữ liệu
+    root[getECUName(newName)] = getFirmwareVersion(newName);
+
+    // Lưu lại các thay đổi vào tệp JSON
+    std::ofstream outFile("/home/thanhtung/Desktop/FOTA_Connect/firmware_list.json");
+    outFile << root;
+    outFile.close();
+    return true;
+}
