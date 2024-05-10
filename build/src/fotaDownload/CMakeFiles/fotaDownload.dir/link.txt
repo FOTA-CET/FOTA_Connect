@@ -1,2 +1,0 @@
-/usr/bin/ar qc libfotaDownload.a CMakeFiles/fotaDownload.dir/fotaDownload.cpp.o
-/usr/bin/ranlib libfotaDownload.a
