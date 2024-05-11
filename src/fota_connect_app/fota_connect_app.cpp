@@ -89,7 +89,7 @@ void fotaConnectApp::start()
     }
     else
     {
-      std::cout << "Update fails\n";
+      std::cout << "Download fails\n";
     }
   }
 
