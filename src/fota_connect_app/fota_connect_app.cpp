@@ -55,6 +55,8 @@ void fotaConnectApp::start()
   std::string name;
   fotaDownload object_fotaDownload;
 
+  std::cout << "Starting FOTA CONNECT" << std::endl;
+
   jsonKey::handleFirebaseJson(jsonkeyFile);
   jsonKey::handleFirebaseToken(firmwaresMetadataFile);
 
@@ -66,6 +68,7 @@ void fotaConnectApp::start()
   if(object_fotaDownload.checkNewestState(name) != Status::OK)
   {
     std::cout << "Firmware already exists.\n";
+    restAdapter::resetStatusFirebase();
   }
   else
   {
@@ -89,8 +92,9 @@ void fotaConnectApp::start()
       std::cout << "Sending FIFO\n";
       writeFifoPipe(fifoECU, ecuName);
       writeFifoPipe(fifoFlash,fileName);
-      std::cout << "Send sucessful\n" << std::endl;
+      std::cout << "Send sucessful" << std::endl;
       object_fotaDownload.updateFirmwareList(name);
+      restAdapter::resetStatusFirebase();
     }
     else
     {
