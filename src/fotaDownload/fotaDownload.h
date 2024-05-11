@@ -16,11 +16,14 @@ class fotaDownload
     private:
         std::string getECUName(std::string& nameFirmware);
         std::string getFirmwareVersion(std::string& nameFirmware);
+        std::string firmwareMetadataDir;
     public:
         Status getNameFirmware(std::string& nameFirmware);
         Status download(ECU ecu, std::string& fileName, std::string& path);
         Status checkNewestState(std::string& fileName);
         bool updateFirmwareList(std::string& newName);
+        void setfirmwareMetadata(std::string& firmwareMetadata);
+        ECU stringToECU(std::string& ecuName);
 
 };
 #endif // include guard

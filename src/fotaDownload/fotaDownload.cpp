@@ -88,7 +88,7 @@ std::string fotaDownload::getFirmwareVersion(std::string& nameFirmware)
 
 Status fotaDownload::checkNewestState(std::string& fileName)
 {
-    std::ifstream file("/home/thanhtung/Desktop/FOTA_Connect/firmware_list.json");
+    std::ifstream file(firmwareMetadataDir);
     Json::Value root;
     file >> root;
     if (root.isMember(getECUName(fileName))) {
@@ -101,7 +101,7 @@ Status fotaDownload::checkNewestState(std::string& fileName)
 
 bool fotaDownload::updateFirmwareList(std::string& newName)
 {
-    std::ifstream file("/home/thanhtung/Desktop/FOTA_Connect/firmware_list.json");
+    std::ifstream file(firmwareMetadataDir);
     Json::Value root;
     file >> root;
 
@@ -109,8 +109,20 @@ bool fotaDownload::updateFirmwareList(std::string& newName)
     root[getECUName(newName)] = getFirmwareVersion(newName);
 
     // Lưu lại các thay đổi vào tệp JSON
-    std::ofstream outFile("/home/thanhtung/Desktop/FOTA_Connect/firmware_list.json");
+    std::ofstream outFile(firmwareMetadataDir);
     outFile << root;
     outFile.close();
     return true;
+}
+
+void fotaDownload::setfirmwareMetadata(std::string& firmwareMetadata)
+{
+    this->firmwareMetadataDir = firmwareMetadata;
+}
+
+ECU fotaDownload::stringToECU(std::string& ecuName)
+{
+    if(!strcmp(ecuName.c_str(),"ESP32")) return ECU::ESP32;
+    else if(!strcmp(ecuName.c_str(),"ATMEGA328P")) return ECU::ATMEGA328P;
+    else return ECU::STM32;
 }
