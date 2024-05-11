@@ -10,6 +10,8 @@
 
 #include "fota_connect_app.h"
 #include "fotaDownload.h"
+#include "cloudUrl.h"
+#include "jsonKey.h"
 
 fotaConnectApp::fotaConnectApp()
 {
@@ -31,6 +33,16 @@ fotaConnectApp::fotaConnectApp()
   {
     firmwaresMetadata = std::getenv("FOTA_FIMWARE_LIST");
   }
+
+  if (std::getenv("FIREBASE_JSON_KEY") == nullptr) {
+    auto errMsg = "fotaConnectApp: environment variable FIREBASE_JSON_KEY is not set";
+    throw std::runtime_error(errMsg);
+  }
+  else
+  {
+    jsonkey = std::getenv("FIREBASE_JSON_KEY");
+  }
+
   std::cout << "fotaStorage: " << fotaStorage << std::endl;
   std::cout << "fifoECU: " << fifoECU << std::endl;
   std::cout << "fifoFlash: " << fifoFlash << std::endl;
@@ -62,6 +74,10 @@ void fotaConnectApp::start()
 {
   std::string name;
   fotaDownload object_fotaDownload;
+
+  jsonKey::handleFirebaseJson(jsonkey);
+  jsonKey::handleFirebaseToken(firmwaresMetadata);
+
   while(object_fotaDownload.getNameFirmware(name) == Status::ERROR);
   object_fotaDownload.setfirmwareMetadata(firmwaresMetadata);
   std::cout << "Found new firmware:\t";
@@ -76,14 +92,23 @@ void fotaConnectApp::start()
     std::cout << "Check OK!\n";
     std::string ecuName = name.substr(0,name.find("_"));
     std::string filePath = listFirmware + "/" + name;
-    if(object_fotaDownload.stringToECU(ecuName) != ECU::ESP32) filePath += ".hex";
-    else filePath += ".bin";
+    std::string fileName = name;
+    if(object_fotaDownload.stringToECU(ecuName) != ECU::ESP32) 
+    {
+      filePath += ".hex";
+      fileName += ".hex";
+    }
+    else 
+    {
+      filePath += ".bin";
+      fileName += ".bin";
+    }
     if(object_fotaDownload.download(object_fotaDownload.stringToECU(ecuName), name, filePath) == Status::OK)
     {
       std::cout << "Download success\n";
       std::cout << "Sending FIFO\n";
       writeFifoPipe(fifoECU, ecuName);
-      writeFifoPipe(fifoFlash,filePath);
+      writeFifoPipe(fifoFlash,fileName);
       std::cout << "Send sucessful\n" << std::endl;
       object_fotaDownload.updateFirmwareList(name);
     }

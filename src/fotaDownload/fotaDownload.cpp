@@ -29,7 +29,10 @@ Status fotaDownload::download(ECU ecu, std::string& fileName, std::string& path)
 
 Status fotaDownload::getNameFirmware(std::string& nameFirmware)
 {
-    std::string urlFIRMWARE = "https://hex-tung-b8ae7-default-rtdb.firebaseio.com/FIRMWARE.json?BXywcJZCAWi1tiJY0z5hoWz2YwGiVCPqiSOdECW5";
+    std::string urlFIRMWARE = "https://";
+    urlFIRMWARE += jsonKey::getProjectID();
+    urlFIRMWARE += "-default-rtdb.firebaseio.com/FIRMWARE.json?";
+    urlFIRMWARE += jsonKey::getToken();
 
     std::string metadataRespone;
     if(restAdapter::handleRequest(urlFIRMWARE, &metadataRespone) != CURLcode::CURLE_OK) throw -1;
@@ -49,7 +52,9 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
     std::string MCUname = root["FIRMWARE"].asString();
 
     if(strcmp(MCUname.c_str(),"NONE") == 0) return Status::ERROR;
-    std::string urlMCU = "https://hex-tung-b8ae7-default-rtdb.firebaseio.com/" + MCUname + ".json?BXywcJZCAWi1tiJY0z5hoWz2YwGiVCPqiSOdECW5";
+    std::string urlMCU = "https://";
+    urlMCU += jsonKey::getProjectID();;
+    urlMCU += "-default-rtdb.firebaseio.com/" + MCUname + ".json?BXywcJZCAWi1tiJY0z5hoWz2YwGiVCPqiSOdECW5";
 
     std::string metadataRespone_MCU;
     if(restAdapter::handleRequest(urlMCU, &metadataRespone_MCU) != CURLcode::CURLE_OK) throw -1;

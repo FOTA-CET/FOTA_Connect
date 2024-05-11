@@ -19,7 +19,7 @@ CURLcode restAdapter::handleRequest(std::string& url, std::string* responeString
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
-        std::string privateKey = jsonKey::getPrivateKey("/home/thanhtung/Desktop/fota_google_cloud/hex-tung-b8ae7-166e06f54e2d.json"); // Path to your service account JSON file
+        std::string privateKey = jsonKey::getPrivateKey(); // Path to your service account JSON file
         curl_easy_setopt(curl, CURLOPT_XOAUTH2_BEARER, privateKey.c_str());
 
         if(stream == nullptr)

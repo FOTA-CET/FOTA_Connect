@@ -23,14 +23,46 @@ std::string jsonKey::getDownloadToken(const std::string& jsonString) {
 }
 
 // Function to read the service account JSON file and extract the private key
-std::string jsonKey::getPrivateKey(const std::string& serviceAccountFile) {
+void jsonKey::handleFirebaseJson(const std::string& serviceAccountFile) {
   std::ifstream file(serviceAccountFile);
   if (!file.is_open()) {
-    std::cerr << "Failed to open service account file." << std::endl;
-    return "";
+    std::cerr << "Failed to handleFirebaseJson" << std::endl;
+    throw -1;
   }
 
   Json::Value root;
   file >> root;
-  return root["private_key"].asString();
+  ProjectID = root["project_id"].asString();
+  PrivateKey = root["private_key"].asString();
 }
+
+void jsonKey::handleFirebaseToken(const std::string& serviceAccountFile)
+{
+  std::ifstream file(serviceAccountFile);
+  if (!file.is_open()) {
+    std::cerr << "Failed to handleFirebaseToken" << std::endl;
+    throw -1;
+  }
+
+  Json::Value root;
+  file >> root;
+ Token = root["token"].asString();
+}
+
+std::string jsonKey::getPrivateKey()
+{
+  return PrivateKey;
+}
+std::string jsonKey::getProjectID()
+{
+  return ProjectID;
+}
+
+std::string jsonKey::getToken()
+{
+  return Token;
+}
+
+std::string jsonKey::PrivateKey = "";
+std::string jsonKey::ProjectID = "";
+std::string jsonKey::Token = "";

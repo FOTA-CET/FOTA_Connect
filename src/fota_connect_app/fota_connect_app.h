@@ -12,6 +12,7 @@ class fotaConnectApp
         std::string fifoFlash;
         std::string listFirmware;
         std::string firmwaresMetadata;
+        std::string jsonkey;
     public:
         fotaConnectApp();
         void configure();
