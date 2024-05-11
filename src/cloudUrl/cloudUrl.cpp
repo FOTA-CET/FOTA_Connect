@@ -4,7 +4,7 @@ std::string cloudUrl::getCURL(ECU ecu, typeURL type,std::string filename, std::s
     std::string url = "https://firebasestorage.googleapis.com/v0/b/hex-tung-b8ae7.appspot.com/o/";
     if(type == typeURL::METADATA && ecu == ECU::ESP32)
     {
-        url += suffixes;
+        url += filename;
         url += ".bin";
         return url;
     }
