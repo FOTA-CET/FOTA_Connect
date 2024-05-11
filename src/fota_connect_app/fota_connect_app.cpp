@@ -15,39 +15,26 @@
 
 fotaConnectApp::fotaConnectApp()
 {
+  if (std::getenv("FOTA_CONFIG_DIR") == nullptr) {
+    auto errMsg = "fotaConnectApp: environment variable FOTA_CONFIG_DIR is not set";
+    throw std::runtime_error(errMsg);
+  } else {
+    fotaConfDir = std::getenv("FOTA_CONFIG_DIR");
+    firmwaresMetadataFile = fotaConfDir + "/firmware_list.json";
+    jsonkeyFile = fotaConfDir + "/firebase.json";
+  }
+
   if (std::getenv("FOTA_STORAGE") == nullptr) {
     auto errMsg = "fotaConnectApp: environment variable FOTA_STORAGE is not set";
     throw std::runtime_error(errMsg);
-  } else {
+  }
+  else
+  {
     fotaStorage = std::getenv("FOTA_STORAGE");
     fifoECU = fotaStorage + "/fifoECU";
     fifoFlash = fotaStorage + "/fifoFlash";
-    listFirmware = fotaStorage + "/Firmware/";
+    firmwareDir = fotaStorage; // + "/Firmware/";
   }
-
-  if (std::getenv("FOTA_FIMWARE_LIST") == nullptr) {
-    auto errMsg = "fotaConnectApp: environment variable FOTA_FIMWARE_LIST is not set";
-    throw std::runtime_error(errMsg);
-  }
-  else
-  {
-    firmwaresMetadata = std::getenv("FOTA_FIMWARE_LIST");
-  }
-
-  if (std::getenv("FIREBASE_JSON_KEY") == nullptr) {
-    auto errMsg = "fotaConnectApp: environment variable FIREBASE_JSON_KEY is not set";
-    throw std::runtime_error(errMsg);
-  }
-  else
-  {
-    jsonkey = std::getenv("FIREBASE_JSON_KEY");
-  }
-
-  std::cout << "fotaStorage: " << fotaStorage << std::endl;
-  std::cout << "fifoECU: " << fifoECU << std::endl;
-  std::cout << "fifoFlash: " << fifoFlash << std::endl;
-  std::cout << "Firmware: " << listFirmware << std::endl;
-  std::cout << "firmwaresMetadata: " << firmwaresMetadata << std::endl;
 }
 
 void fotaConnectApp::signalHandler(int signal) {
@@ -56,17 +43,10 @@ void fotaConnectApp::signalHandler(int signal) {
 }
 
 bool fotaConnectApp::writeFifoPipe(const std::string& fifoPath, std::string& buff) {
-  // Mở hoặc tạo FIFO
     mkfifo(fifoPath.c_str(), 0666);
-
-    // Mở FIFO để ghi
     int fd = open(fifoPath.c_str(), O_WRONLY);
-
     write(fd, buff.c_str(), buff.length());
-
-    // Đóng FIFO
     close(fd);
-
     return true;
 }
 
@@ -75,11 +55,11 @@ void fotaConnectApp::start()
   std::string name;
   fotaDownload object_fotaDownload;
 
-  jsonKey::handleFirebaseJson(jsonkey);
-  jsonKey::handleFirebaseToken(firmwaresMetadata);
+  jsonKey::handleFirebaseJson(jsonkeyFile);
+  jsonKey::handleFirebaseToken(firmwaresMetadataFile);
 
   while(object_fotaDownload.getNameFirmware(name) == Status::ERROR);
-  object_fotaDownload.setfirmwareMetadata(firmwaresMetadata);
+  object_fotaDownload.setfirmwareMetadata(firmwaresMetadataFile);
   std::cout << "Found new firmware:\t";
   std::cout << name << std::endl;
   std::cout << "Checking firmware\n";
@@ -91,7 +71,7 @@ void fotaConnectApp::start()
   {
     std::cout << "Check OK!\n";
     std::string ecuName = name.substr(0,name.find("_"));
-    std::string filePath = listFirmware + "/" + name;
+    std::string filePath = firmwareDir + "/" + name;
     std::string fileName = name;
     if(object_fotaDownload.stringToECU(ecuName) != ECU::ESP32) 
     {

@@ -10,9 +10,10 @@ class fotaConnectApp
         std::string fotaStorage;
         std::string fifoECU;
         std::string fifoFlash;
-        std::string listFirmware;
-        std::string firmwaresMetadata;
-        std::string jsonkey;
+        std::string firmwareDir; 
+        std::string fotaConfDir;
+        std::string firmwaresMetadataFile;
+        std::string jsonkeyFile;
     public:
         fotaConnectApp();
         void configure();
