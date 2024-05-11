@@ -10,7 +10,6 @@ std::string cloudUrl::getCURL(ECU ecu, typeURL type,std::string filename, std::s
     {
         url += filename;
         url += ".bin";
-        std::cout << url << std::endl;
         return url;
     }
     else if(type == typeURL::METADATA && ecu != ECU::ESP32)

@@ -54,7 +54,9 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
     if(strcmp(MCUname.c_str(),"NONE") == 0) return Status::ERROR;
     std::string urlMCU = "https://";
     urlMCU += jsonKey::getProjectID();;
-    urlMCU += "-default-rtdb.firebaseio.com/" + MCUname + ".json?BXywcJZCAWi1tiJY0z5hoWz2YwGiVCPqiSOdECW5";
+    urlMCU += "-default-rtdb.firebaseio.com/" + MCUname;
+    urlMCU += ".json?";
+    urlMCU += jsonKey::getToken();
 
     std::string metadataRespone_MCU;
     if(restAdapter::handleRequest(urlMCU, &metadataRespone_MCU) != CURLcode::CURLE_OK) throw -1;
