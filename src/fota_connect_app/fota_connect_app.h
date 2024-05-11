@@ -6,12 +6,12 @@ class fotaConnectApp
 {
     private:
         static void signalHandler(int signal);
-        bool readFifoPipe(const std::string& fifoPath, std::string& buff);
-        std::string fota_conf;
-        std::string ecuConfigFile;
+        bool writeFifoPipe(const std::string& fifoPath, std::string& buff);
         std::string fotaStorage;
         std::string fifoECU;
         std::string fifoFlash;
+        std::string listFirmware;
+        std::string firmwaresMetadata;
     public:
         fotaConnectApp();
         void configure();

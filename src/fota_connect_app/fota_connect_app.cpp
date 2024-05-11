@@ -14,16 +14,28 @@
 fotaConnectApp::fotaConnectApp()
 {
   if (std::getenv("FOTA_STORAGE") == nullptr) {
-    auto errMsg = "fotaMasterApp: environment variable FOTA_STORAGE is not set";
+    auto errMsg = "fotaConnectApp: environment variable FOTA_STORAGE is not set";
     throw std::runtime_error(errMsg);
   } else {
     fotaStorage = std::getenv("FOTA_STORAGE");
     fifoECU = fotaStorage + "/fifoECU";
     fifoFlash = fotaStorage + "/fifoFlash";
+    listFirmware = fotaStorage + "/Firmware/";
+  }
+
+  if (std::getenv("FOTA_FIMWARE_LIST") == nullptr) {
+    auto errMsg = "fotaConnectApp: environment variable FOTA_FIMWARE_LIST is not set";
+    throw std::runtime_error(errMsg);
+  }
+  else
+  {
+    firmwaresMetadata = std::getenv("FOTA_FIMWARE_LIST");
   }
   std::cout << "fotaStorage: " << fotaStorage << std::endl;
   std::cout << "fifoECU: " << fifoECU << std::endl;
   std::cout << "fifoFlash: " << fifoFlash << std::endl;
+  std::cout << "Firmware: " << listFirmware << std::endl;
+  std::cout << "firmwaresMetadata: " << firmwaresMetadata << std::endl;
 }
 
 void fotaConnectApp::signalHandler(int signal) {
@@ -31,20 +43,19 @@ void fotaConnectApp::signalHandler(int signal) {
   exit(signal);
 }
 
-bool fotaConnectApp::readFifoPipe(const std::string& fifoPath, std::string& buff) {
-  char buffer[100];
-  auto fd = open(fifoPath.c_str(), O_RDONLY);
-  if (fd == -1) {
-    return false;
-  }
+bool fotaConnectApp::writeFifoPipe(const std::string& fifoPath, std::string& buff) {
+  // Mở hoặc tạo FIFO
+    mkfifo(fifoPath.c_str(), 0666);
 
-  auto ret = read(fd, &buffer, sizeof(buffer));
-  if (ret <= 0) {
-    return false;
-  }
-  buff = buffer;
-  close(fd);
-  return true;
+    // Mở FIFO để ghi
+    int fd = open(fifoPath.c_str(), O_WRONLY);
+
+    write(fd, buff.c_str(), buff.length());
+
+    // Đóng FIFO
+    close(fd);
+
+    return true;
 }
 
 void fotaConnectApp::start()
@@ -52,6 +63,7 @@ void fotaConnectApp::start()
   std::string name;
   fotaDownload object_fotaDownload;
   while(object_fotaDownload.getNameFirmware(name) == Status::ERROR);
+  object_fotaDownload.setfirmwareMetadata(firmwaresMetadata);
   std::cout << "Found new firmware:\t";
   std::cout << name << std::endl;
   std::cout << "Checking firmware\n";
@@ -62,11 +74,18 @@ void fotaConnectApp::start()
   else
   {
     std::cout << "Check OK!\n";
-    std::string filePath = fifoFlash + "/" + name + ".hex";
-    object_fotaDownload.updateFirmwareList(name);
-    if(object_fotaDownload.download(ECU::ATMEGA328P, name, filePath) == Status::OK)
+    std::string ecuName = name.substr(0,name.find("_"));
+    std::string filePath = listFirmware + "/" + name;
+    if(object_fotaDownload.stringToECU(ecuName) != ECU::ESP32) filePath += ".hex";
+    else filePath += ".bin";
+    if(object_fotaDownload.download(object_fotaDownload.stringToECU(ecuName), name, filePath) == Status::OK)
     {
-      std::cout << "Update success\n";
+      std::cout << "Download success\n";
+      std::cout << "Sending FIFO\n";
+      writeFifoPipe(fifoECU, ecuName);
+      writeFifoPipe(fifoFlash,filePath);
+      std::cout << "Send sucessful\n" << std::endl;
+      object_fotaDownload.updateFirmwareList(name);
     }
     else
     {
