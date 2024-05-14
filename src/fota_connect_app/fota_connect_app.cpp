@@ -20,8 +20,9 @@ fotaConnectApp::fotaConnectApp()
     throw std::runtime_error(errMsg);
   } else {
     fotaConfDir = std::getenv("FOTA_CONFIG_DIR");
-    firmwaresMetadataFile = fotaConfDir + "/firmware_list.json";
-    jsonkeyFile = fotaConfDir + "/firebase.json";
+    firmwaresMetadataFile = fotaConfDir + "/firmwareList.json";
+    jsonkeyFile = fotaConfDir + "/firebaseConfig.json";
+    tokenFile = fotaConfDir + "/tokenConfig.json";
   }
 
   if (std::getenv("FOTA_STORAGE") == nullptr) {
@@ -58,7 +59,7 @@ void fotaConnectApp::start()
   std::cout << "Starting FOTA CONNECT" << std::endl;
 
   jsonKey::handleFirebaseJson(jsonkeyFile);
-  jsonKey::handleFirebaseToken(firmwaresMetadataFile);
+  jsonKey::handleFirebaseToken(tokenFile);
 
   while(object_fotaDownload.getNameFirmware(name) == Status::ERROR);
   object_fotaDownload.setfirmwareMetadata(firmwaresMetadataFile);
@@ -75,17 +76,16 @@ void fotaConnectApp::start()
     std::cout << "Check OK!\n";
     std::string ecuName = name.substr(0,name.find("_"));
     std::string filePath = firmwareDir + "/" + name;
-    std::string fileName = name;
     if(object_fotaDownload.stringToECU(ecuName) != ECU::ESP32) 
     {
       filePath += ".hex";
-      fileName += ".hex";
     }
     else 
     {
       filePath += ".bin";
-      fileName += ".bin";
     }
+
+    std::string fileName = name + filePath.substr(filePath.length() - 4, 4);
     if(object_fotaDownload.download(object_fotaDownload.stringToECU(ecuName), name, filePath) == Status::OK)
     {
       std::cout << "Download success\n";

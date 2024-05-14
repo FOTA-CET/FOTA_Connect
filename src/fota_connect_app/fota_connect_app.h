@@ -14,9 +14,9 @@ class fotaConnectApp
         std::string fotaConfDir;
         std::string firmwaresMetadataFile;
         std::string jsonkeyFile;
+        std::string tokenFile;
     public:
         fotaConnectApp();
-        void configure();
         void start();
 };
 #endif // include guard
