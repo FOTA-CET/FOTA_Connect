@@ -31,7 +31,7 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
 {
     std::string urlFIRMWARE = "https://";
     urlFIRMWARE += jsonKey::getProjectID();
-    urlFIRMWARE += "-default-rtdb.firebaseio.com/FIRMWARE.json?";
+    urlFIRMWARE += "-default-rtdb.firebaseio.com/.json?auth=";
     urlFIRMWARE += jsonKey::getToken();
 
     std::string metadataRespone;
@@ -49,7 +49,7 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
         std::cerr << "Failed to parse JSON: " << errs << std::endl;
     }
 
-    std::string MCUname = root["FIRMWARE"].asString();
+    std::string MCUname = root["UPDATE"].asString();
 
     if(strcmp(MCUname.c_str(),"NONE") == 0) return Status::ERROR;
     std::string urlMCU = "https://";
