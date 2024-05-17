@@ -23,7 +23,8 @@ class fotaDownload
         Status checkNewestState(std::string& fileName);
         bool updateFirmwareList(std::string& newName);
         void setfirmwareMetadata(std::string& firmwareMetadata);
-        ECU stringToECU(std::string& ecuName);
-
+        bool resetUpdateFieldFirebase();
+        bool updateMCUStatus(std::string& ecu, std::string&& status);
+        bool updatePercent(std::string& ecu, std::string& percent);
 };
 #endif // include guard

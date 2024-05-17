@@ -127,9 +127,20 @@ void fotaDownload::setfirmwareMetadata(std::string& firmwareMetadata)
     this->firmwareMetadataDir = firmwareMetadata;
 }
 
-ECU fotaDownload::stringToECU(std::string& ecuName)
+bool fotaDownload::resetUpdateFieldFirebase()
 {
-    if(!strcmp(ecuName.c_str(),"ESP32")) return ECU::ESP32;
-    else if(!strcmp(ecuName.c_str(),"ATMEGA328P")) return ECU::ATMEGA328P;
-    else return ECU::STM32;
+    if(restAdapter::writeFirebase(".json", "UPDATE", "NONE")) return true;
+    else return false;
+}
+
+bool fotaDownload::updateMCUStatus(std::string& ecu, std::string&& status)
+{
+    if(restAdapter::writeFirebase(ecu + ".json", "status", status)) return true;
+    else return false;
+}
+
+bool fotaDownload::updatePercent(std::string& ecu, std::string& percent)
+{
+    if(restAdapter::writeFirebase(ecu + ".json", "percent", percent)) return true;
+    else return false;
 }
