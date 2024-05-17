@@ -12,6 +12,6 @@ class restAdapter
         static size_t skipResponse(void *contents, size_t size, size_t nmemb, void *userp);
     public:
         static CURLcode handleRequest(std::string& url, std::string* responeString = nullptr, FILE *stream = nullptr);
-        static bool resetStatusFirebase();
+        static bool writeFirebase(std::string path, std::string key, std::string value);
 };
 #endif
