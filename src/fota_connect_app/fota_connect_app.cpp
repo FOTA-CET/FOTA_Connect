@@ -110,12 +110,14 @@ void fotaConnectApp::start()
         {
           object_fotaDownload.updateMCUStatus(ecuName, ECU_StatustoString(ECU_Status::DOWNLOAD));
           std::cout << "Download success\n";
+
+          object_fotaDownload.resetUpdateFieldFirebase();
+          object_fotaDownload.updateFirmwareList(name);
+
           std::cout << "Sending FIFO\n";
           writeFifoPipe(fifoECU, ecuName);
           writeFifoPipe(fifoFlash, fileName);
           std::cout << "Send successful" << std::endl;
-          object_fotaDownload.updateFirmwareList(name);
-          object_fotaDownload.resetUpdateFieldFirebase();
         }
         else
         {
