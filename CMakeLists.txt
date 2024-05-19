@@ -16,6 +16,6 @@ include_directories(${CURL_INCLUDE_DIRS})
 pkg_check_modules(JSONCPP jsoncpp)
 include_directories(${JSONCPP_INCLUDE_DIRS})
 
-add_executable(fotaConnectApp src/main.cpp)
+add_executable(fotaConnect src/main.cpp)
 
-target_link_libraries(fotaConnectApp fotaConnectApp fotaDownload cloudUrl jsonKey restAdapter ${CURL_LIBRARIES} ${JSONCPP_LIBRARIES})
+target_link_libraries(fotaConnect fotaConnectApp fotaDownload cloudUrl jsonKey restAdapter ${CURL_LIBRARIES} ${JSONCPP_LIBRARIES})
