@@ -15,7 +15,6 @@ class fotaConnectApp
         std::string fifoFlash;
         std::string fifoPercent;
         std::string firmwareDir; 
-        std::string fotaConfDir;
         std::string firmwaresMetadataFile;
         std::string jsonkeyFile;
         std::string tokenFile;

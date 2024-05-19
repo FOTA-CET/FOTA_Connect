@@ -15,19 +15,6 @@
 
 fotaConnectApp::fotaConnectApp()
 {
-  if (std::getenv("FOTA_CONFIG_DIR") == nullptr)
-  {
-    auto errMsg = "fotaConnectApp: environment variable FOTA_CONFIG_DIR is not set";
-    throw std::runtime_error(errMsg);
-  }
-  else
-  {
-    fotaConfDir = std::getenv("FOTA_CONFIG_DIR");
-    firmwaresMetadataFile = fotaConfDir + "/firmwareList.json";
-    jsonkeyFile = fotaConfDir + "/firebaseConfig.json";
-    tokenFile = fotaConfDir + "/tokenConfig.json";
-  }
-
   if (std::getenv("FOTA_STORAGE") == nullptr)
   {
     auto errMsg = "fotaConnectApp: environment variable FOTA_STORAGE is not set";
@@ -36,10 +23,14 @@ fotaConnectApp::fotaConnectApp()
   else
   {
     fotaStorage = std::getenv("FOTA_STORAGE");
+    firmwaresMetadataFile = fotaStorage + "/config/firmwareListConfig.json";
+    jsonkeyFile = fotaStorage + "/config/firebaseConfig.json";
+    tokenFile = fotaStorage + "/config/tokenConfig.json";
+
     fifoECU = fotaStorage + "/fifoECU";
-    fifoFlash = fotaStorage + "/fifoFlash";
+    fifoFlash = fotaStorage + "/fifoFirmware";
     fifoPercent = fotaStorage + "/fifoPercent";
-    firmwareDir = fotaStorage; // + "/Firmware/";
+    firmwareDir = fotaStorage + "/firmware/";
   }
 }
 
@@ -90,7 +81,7 @@ void fotaConnectApp::start()
         else
           std::cout << "Reset state ERROR\n"
                     << std::endl;
-        if (object_fotaDownload.updateMCUStatus(ecuName, ECU_StatustoString(ECU_Status::REJECT)))
+        if (fotaDownload::updateMCUStatus(ecuName, ECU_StatustoString(ECU_Status::REJECT)))
           std::cout << "Update MCU status OK" << std::endl;
         else
           std::cout << "Update MCU status ERROR" << std::endl;
@@ -192,7 +183,8 @@ void fotaConnectApp::handleProgress()
     {
       std::string percent = percentBuf.substr(percentBuf.find("_") + 1);
       std::string ecu = percentBuf.substr(0, percentBuf.find("_"));
-      if (restAdapter::writeFirebase(ecu + ".json", "percent", percent))
+
+      if (fotaDownload::updatePercent(ecu, percent))
       {
         std::cout << "update percent successful\n";
       }
@@ -200,6 +192,14 @@ void fotaConnectApp::handleProgress()
       else
       {
         std::cout << "Update percent fail\n";
+      }
+
+      // Check if percent is 100
+      if(!strcmp(percent.c_str(), "100"))
+      {
+        std::string resetPercent = "0";
+        fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
+        fotaDownload::updatePercent(ecu, resetPercent);
       }
     }
   }
