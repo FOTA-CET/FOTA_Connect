@@ -147,9 +147,8 @@ bool fotaDownload::updatePercent(std::string& ecu, std::string& percent)
 
 Status fotaDownload::checkExistFile(std::string& fileName, std::string& storagePath)
 {
-    namespace fs = std::filesystem;
-    fs::path filePath = fs::path(storagePath) / fileName;
-    if (fs::exists(filePath)) {
+    std::string filePath = storagePath + fileName;
+    if (access(filePath.c_str(), F_OK) != -1) {
         return Status::OK;
     } else {
         return Status::ERROR;
