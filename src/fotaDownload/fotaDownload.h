@@ -9,6 +9,7 @@
 #include "cloudUrl.h"
 #include <json/json.h> 
 #include <string.h>
+#include <filesystem>
 
 enum class Status{OK, ERROR};
 class fotaDownload
@@ -21,6 +22,7 @@ class fotaDownload
         Status getNameFirmware(std::string& nameFirmware);
         Status download(ECU ecu, std::string& fileName, std::string& path);
         Status checkNewestState(std::string& fileName);
+        Status checkExistFile(std::string& fileName, std::string& storagePath);
         bool updateFirmwareList(std::string& newName);
         void setfirmwareMetadata(std::string& firmwareMetadata);
         bool resetUpdateFieldFirebase();

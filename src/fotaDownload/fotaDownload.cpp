@@ -144,3 +144,14 @@ bool fotaDownload::updatePercent(std::string& ecu, std::string& percent)
     if(restAdapter::writeFirebase(ecu + ".json", "percent", percent)) return true;
     else return false;
 }
+
+Status fotaDownload::checkExistFile(std::string& fileName, std::string& storagePath)
+{
+    namespace fs = std::filesystem;
+    fs::path filePath = fs::path(storagePath) / fileName;
+    if (fs::exists(filePath)) {
+        return Status::OK;
+    } else {
+        return Status::ERROR;
+    }
+}

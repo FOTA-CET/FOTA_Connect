@@ -38,7 +38,7 @@ fotaConnectApp::fotaConnectApp()
     fotaStorage = std::getenv("FOTA_STORAGE");
     fifoECU = fotaStorage + "/fifoECU";
     fifoFlash = fotaStorage + "/fifoFlash";
-    fifoPercent = fotaStorage + "/fifoProgress";
+    fifoPercent = fotaStorage + "/fifoPercent";
     firmwareDir = fotaStorage; // + "/Firmware/";
   }
 }
@@ -70,6 +70,8 @@ void fotaConnectApp::start()
 
   while (1)
   {
+    signal(SIGINT, fotaConnectApp::signalHandler);
+    signal(SIGTERM, fotaConnectApp::signalHandler);
     if (object_fotaDownload.getNameFirmware(name) == Status::OK)
     {
       object_fotaDownload.setfirmwareMetadata(firmwaresMetadataFile);
@@ -96,6 +98,7 @@ void fotaConnectApp::start()
       else
       {
         std::cout << "Check OK!\n";
+        object_fotaDownload.updateMCUStatus(ecuName, ECU_StatustoString(ECU_Status::UPDATE));
         if (strcmp(ecuName.c_str(), "ESP32") != 0)
         {
           filePath += ".hex";
@@ -106,27 +109,28 @@ void fotaConnectApp::start()
         }
 
         std::string fileName = name + filePath.substr(filePath.length() - 4, 4); // luu y
-        if (object_fotaDownload.download(stringToECU(ecuName), name, filePath) == Status::OK)
-        {
-          object_fotaDownload.updateMCUStatus(ecuName, ECU_StatustoString(ECU_Status::DOWNLOAD));
-          std::cout << "Download success\n";
 
-          object_fotaDownload.resetUpdateFieldFirebase();
-          object_fotaDownload.updateFirmwareList(name);
-
-          std::cout << "Sending FIFO\n";
-          writeFifoPipe(fifoECU, ecuName);
-          writeFifoPipe(fifoFlash, fileName);
-          std::cout << "Send successful" << std::endl;
-        }
-        else
+        if (object_fotaDownload.checkExistFile(fileName, firmwareDir) == Status::ERROR)
         {
-          std::cout << "Download fails\n";
+          if (object_fotaDownload.download(stringToECU(ecuName), name, filePath) == Status::OK)
+          {
+            std::cout << "Download success\n";
+          }
+          else
+          {
+            std::cout << "Download fails\n";
+          }
         }
+
+        object_fotaDownload.resetUpdateFieldFirebase();
+        object_fotaDownload.updateFirmwareList(name);
+
+        std::cout << "Sending FIFO\n";
+        writeFifoPipe(fifoECU, ecuName);
+        writeFifoPipe(fifoFlash, fileName);
+        std::cout << "Send successful" << std::endl << std::endl;
       }
     }
-    signal(SIGINT, fotaConnectApp::signalHandler);
-    signal(SIGTERM, fotaConnectApp::signalHandler);
   }
 }
 
