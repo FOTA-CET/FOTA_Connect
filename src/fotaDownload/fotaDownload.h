@@ -26,7 +26,7 @@ class fotaDownload
         bool updateFirmwareList(std::string& newName);
         void setfirmwareMetadata(std::string& firmwareMetadata);
         bool resetUpdateFieldFirebase();
-        bool updateMCUStatus(std::string& ecu, std::string&& status);
-        bool updatePercent(std::string& ecu, std::string& percent);
+        static bool updateMCUStatus(std::string& ecu, std::string&& status);
+        static bool updatePercent(std::string& ecu, std::string& percent);
 };
 #endif // include guard

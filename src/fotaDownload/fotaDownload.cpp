@@ -49,7 +49,7 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
         std::cerr << "Failed to parse JSON: " << errs << std::endl;
     }
 
-    std::string MCUname = root["UPDATE"].asString();
+    std::string MCUname = root["ECU_UPDATE"].asString();
 
     if(strcmp(MCUname.c_str(),"NONE") == 0) return Status::ERROR;
     std::string urlMCU = "https://";
@@ -129,19 +129,19 @@ void fotaDownload::setfirmwareMetadata(std::string& firmwareMetadata)
 
 bool fotaDownload::resetUpdateFieldFirebase()
 {
-    if(restAdapter::writeFirebase(".json", "UPDATE", "NONE")) return true;
+    if(restAdapter::writeFirebase(".json", "ECU_UPDATE", "NONE")) return true;
     else return false;
 }
 
 bool fotaDownload::updateMCUStatus(std::string& ecu, std::string&& status)
 {
-    if(restAdapter::writeFirebase(ecu + ".json", "status", status)) return true;
+    if(restAdapter::writeFirebase("ECU/" + ecu + ".json", "status", status)) return true;
     else return false;
 }
 
 bool fotaDownload::updatePercent(std::string& ecu, std::string& percent)
 {
-    if(restAdapter::writeFirebase(ecu + ".json", "percent", percent)) return true;
+    if(restAdapter::writeFirebase("ECU/" + ecu + ".json", "percent", percent)) return true;
     else return false;
 }
 
