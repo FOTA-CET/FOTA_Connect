@@ -4,7 +4,7 @@
 #include <iostream>
 enum class ECU {ESP32, ATMEGA328P, STM32};
 enum class typeURL{METADATA, DATA};
-enum class ECU_Status{NONE, DOWNLOAD, REJECT};
+enum class ECU_Status{NONE, UPDATE, REJECT};
 class cloudUrl
 {
     private:
