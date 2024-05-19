@@ -144,8 +144,8 @@ std::string fotaConnectApp::ECU_StatustoString(ECU_Status status)
 {
   if (status == ECU_Status::NONE)
     return "NONE";
-  else if (status == ECU_Status::DOWNLOAD)
-    return "DOWNLOAD";
+  else if (status == ECU_Status::UPDATE)
+    return "UPDATE";
   else
     return "REJECT";
 }
