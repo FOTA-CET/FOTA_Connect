@@ -11,4 +11,6 @@ include_directories(${CURL_INCLUDE_DIRS})
 pkg_check_modules(JSONCPP jsoncpp)
 include_directories(${JSONCPP_INCLUDE_DIRS})
 
-target_link_libraries(fotaDownload PUBLIC cloudUrl jsonKey restAdapter ${CURL_LIBRARIES} ${JSONCPP_LIBRARIES})
+find_package(Threads REQUIRED)
+
+target_link_libraries(fotaDownload PUBLIC cloudUrl jsonKey restAdapter Threads::Threads ${CURL_LIBRARIES} ${JSONCPP_LIBRARIES})
