@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <csignal>
+#include <string>
 
 #include "fota_connect_app.h"
 #include "fotaDownload.h"
@@ -44,7 +45,7 @@ bool fotaConnectApp::writeFifoPipe(const std::string &fifoPath, std::string &buf
 {
   mkfifo(fifoPath.c_str(), 0666);
   int fd = open(fifoPath.c_str(), O_WRONLY);
-  write(fd, buff.c_str(), buff.length());
+  write(fd, buff.c_str(), sizeof(buff));
   close(fd);
   return true;
 }
@@ -119,6 +120,8 @@ void fotaConnectApp::start()
         std::cout << "Sending FIFO\n";
         writeFifoPipe(fifoECU, ecuName);
         writeFifoPipe(fifoFlash, fileName);
+        std::cout << "ecuName: " << ecuName << std::endl;
+        std::cout << "fileName: " << fileName << std::endl;
         std::cout << "Send successful" << std::endl << std::endl;
       }
     }
@@ -177,23 +180,25 @@ bool fotaConnectApp::readFifoPipe(const std::string &fifoPath, std::string &buff
 
 void fotaConnectApp::handleProgress()
 {
+  std::string percent;
+  std::string ecu;
   while (1)
   {
     if (readFifoPipe(fifoPercent, percentBuf))
     {
-      std::string percent = percentBuf.substr(percentBuf.find("_") + 1);
-      std::string ecu = percentBuf.substr(0, percentBuf.find("_"));
+      percent = percentBuf.substr(percentBuf.find("_") + 1);
+      percentList.push_back(percent);
+    }
 
-      if (fotaDownload::updatePercent(ecu, percent))
-      {
-        std::cout << "update percent successful\n";
+    if (!strcmp(percent.c_str(), "100")) {
+      ecu = percentBuf.substr(0, percentBuf.find("_"));
+      for (auto x : percentList) {
+        if (!fotaDownload::updatePercent(ecu, x))
+        {
+          std::cout << "Update percent fail\n";
+        }
       }
-
-      else
-      {
-        std::cout << "Update percent fail\n";
-      }
-
+      
       // Check if percent is 100
       if(!strcmp(percent.c_str(), "100"))
       {
@@ -201,6 +206,10 @@ void fotaConnectApp::handleProgress()
         fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
         fotaDownload::updatePercent(ecu, resetPercent);
       }
+
+      std::cout << "Successfully to update firmware" << std::endl;
+      percent = "0";
+      percentList.clear();
     }
   }
 }

@@ -3,6 +3,7 @@
 #include <string>
 #include "cloudUrl.h"
 #include <thread>
+#include <vector>
 
 class fotaConnectApp
 {
@@ -26,5 +27,6 @@ class fotaConnectApp
         ECU stringToECU(std::string& ecu);
         std::string ECU_StatustoString(ECU_Status status);
         void handleProgress();
+        std::vector <std::string> percentList;
 };
 #endif // include guard
