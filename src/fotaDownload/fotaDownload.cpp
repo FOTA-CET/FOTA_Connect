@@ -55,7 +55,7 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
     std::string urlMCU = "https://";
     urlMCU += jsonKey::getProjectID();;
     urlMCU += "-default-rtdb.firebaseio.com/ECU/" + MCUname;
-    urlMCU += ".json?";
+    urlMCU += ".json?auth=";
     urlMCU += jsonKey::getToken();
 
     std::string metadataRespone_MCU;
