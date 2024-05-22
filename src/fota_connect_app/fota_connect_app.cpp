@@ -14,6 +14,9 @@
 #include "cloudUrl.h"
 #include "jsonKey.h"
 
+std::mutex ecuPercentListMutex;
+bool doneAdding = false;
+
 fotaConnectApp::fotaConnectApp()
 {
   if (std::getenv("FOTA_STORAGE") == nullptr)
@@ -122,7 +125,8 @@ void fotaConnectApp::start()
         writeFifoPipe(fifoFlash, fileName);
         std::cout << "ecuName: " << ecuName << std::endl;
         std::cout << "fileName: " << fileName << std::endl;
-        std::cout << "Send successful" << std::endl << std::endl;
+        std::cout << "Send successful" << std::endl
+                  << std::endl;
       }
     }
   }
@@ -178,7 +182,7 @@ bool fotaConnectApp::readFifoPipe(const std::string &fifoPath, std::string &buff
   return true;
 }
 
-void fotaConnectApp::handleProgress()
+void fotaConnectApp::handlefifoPercent()
 {
   std::string percent;
   std::string ecu;
@@ -186,30 +190,76 @@ void fotaConnectApp::handleProgress()
   {
     if (readFifoPipe(fifoPercent, percentBuf))
     {
+      std::lock_guard<std::mutex> guard(ecuPercentListMutex);
       percent = percentBuf.substr(percentBuf.find("_") + 1);
-      percentList.push_back(percent);
-    }
-
-    if (!strcmp(percent.c_str(), "100")) {
       ecu = percentBuf.substr(0, percentBuf.find("_"));
-      for (auto x : percentList) {
-        if (!fotaDownload::updatePercent(ecu, x))
+
+      if ((ecuPercentList.find(ecu)) == ecuPercentList.end())
+      {
+        ecuPercentList[ecu].push_back(percent);
+      }
+
+      else
+      {
+        auto result = ecuPercentList.insert(std::make_pair(ecu, std::vector<std::string>()));
+        result.first->second.push_back(percent);
+      }
+      std::string donePercent = "100";
+      for (const auto &pair : ecuPercentList)
+      {
+        const std::vector<std::string> &vec = pair.second;
+        for (const std::string &str : vec)
         {
-          std::cout << "Update percent fail\n";
+          if (str == donePercent)
+          {
+            doneAdding = true;
+            break;
+          }
         }
       }
-      
-      // Check if percent is 100
-      if(!strcmp(percent.c_str(), "100"))
+    }
+  }
+}
+
+void fotaConnectApp::updateECUPercentList()
+{
+  while (1)
+  {
+    while (doneAdding)
+    {
+      std::lock_guard<std::mutex> guard(ecuPercentListMutex);
+      for (auto &pair : ecuPercentList)
       {
-        std::string resetPercent = "0";
-        fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
-        fotaDownload::updatePercent(ecu, resetPercent);
+        auto &values = pair.second;
+        for (auto it = values.begin(); it != values.end();)
+        {
+          auto &percent = *it;
+          std::string ecu = pair.first;
+          std::cout << "ECU: " << ecu << ", Percent: " << percent << std::endl;
+
+          if (!fotaDownload::updatePercent(ecu, percent))
+          {
+            std::cout << "Update percent fail\n";
+          }
+
+          // Check if percent is 100
+          if (percent == "100")
+          {
+            std::string resetPercent = "0";
+            fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
+            fotaDownload::updatePercent(ecu, resetPercent);
+
+            ecuPercentList.erase(ecu); // Erase the entire ECU entry
+            break;                     // Exit the inner loop as the ECU entry is erased
+          }
+          else
+          {
+            it = values.erase(it); // Erase the current percent and update iterator
+          }
+        }
       }
 
-      std::cout << "Successfully to update firmware" << std::endl;
-      percent = "0";
-      percentList.clear();
+      doneAdding = false;
     }
   }
 }

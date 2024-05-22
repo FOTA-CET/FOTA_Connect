@@ -3,7 +3,11 @@
 #include <string>
 #include "cloudUrl.h"
 #include <thread>
+#include <map>
 #include <vector>
+#include <algorithm>
+
+#include <mutex>
 
 class fotaConnectApp
 {
@@ -26,7 +30,8 @@ class fotaConnectApp
         std::string ECUtoString(ECU ecu);
         ECU stringToECU(std::string& ecu);
         std::string ECU_StatustoString(ECU_Status status);
-        void handleProgress();
-        std::vector <std::string> percentList;
+        void handlefifoPercent();
+        void updateECUPercentList();
+        std::map<std::string, std::vector<std::string>> ecuPercentList;
 };
 #endif // include guard
