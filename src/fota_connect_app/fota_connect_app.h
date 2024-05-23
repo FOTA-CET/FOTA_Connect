@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include <mutex>
+#include <condition_variable>
 
 class fotaConnectApp
 {
