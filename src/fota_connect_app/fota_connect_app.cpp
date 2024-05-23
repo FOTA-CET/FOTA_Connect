@@ -16,6 +16,7 @@
 
 std::mutex ecuPercentListMutex;
 bool doneAdding = false;
+std::condition_variable cv;
 
 fotaConnectApp::fotaConnectApp()
 {
@@ -190,7 +191,7 @@ void fotaConnectApp::handlefifoPercent()
   {
     if (readFifoPipe(fifoPercent, percentBuf))
     {
-      std::lock_guard<std::mutex> guard(ecuPercentListMutex);
+      std::unique_lock<std::mutex> guard(ecuPercentListMutex);
       percent = percentBuf.substr(percentBuf.find("_") + 1);
       ecu = percentBuf.substr(0, percentBuf.find("_"));
 
@@ -212,6 +213,7 @@ void fotaConnectApp::handlefifoPercent()
         {
           if (str == donePercent)
           {
+            cv.notify_one();
             doneAdding = true;
             break;
           }
@@ -227,7 +229,8 @@ void fotaConnectApp::updateECUPercentList()
   {
     while (doneAdding)
     {
-      std::lock_guard<std::mutex> guard(ecuPercentListMutex);
+      std::unique_lock<std::mutex> guard(ecuPercentListMutex);
+      cv.wait(guard, []{ return doneAdding; });
       for (auto &pair : ecuPercentList)
       {
         auto &values = pair.second;
@@ -260,6 +263,7 @@ void fotaConnectApp::updateECUPercentList()
       }
 
       doneAdding = false;
+      guard.unlock();
     }
   }
 }
