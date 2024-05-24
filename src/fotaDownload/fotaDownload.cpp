@@ -47,6 +47,7 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
 
     if (!parsingSuccessful) {
         std::cerr << "Failed to parse JSON: " << errs << std::endl;
+        return Status::ERROR;
     }
 
     std::string MCUname = root["ECU_UPDATE"].asString();
@@ -71,6 +72,7 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
 
     if (!parsingSuccessful_2) {
         std::cerr << "Failed to parse JSON: " << errs_2 << std::endl;
+        return Status::ERROR;
     }
 
     std::string version = root_2["version"].asString();
