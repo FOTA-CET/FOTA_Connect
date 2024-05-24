@@ -189,35 +189,19 @@ void fotaConnectApp::handlefifoPercent()
   std::string ecu;
   while (1)
   {
-    if (readFifoPipe(fifoPercent, percentBuf))
-    {
-      std::unique_lock<std::mutex> guard(ecuPercentListMutex);
+    if (readFifoPipe(fifoPercent, percentBuf)) {
       percent = percentBuf.substr(percentBuf.find("_") + 1);
       ecu = percentBuf.substr(0, percentBuf.find("_"));
 
-      if ((ecuPercentList.find(ecu)) == ecuPercentList.end())
+      std::unique_lock<std::mutex> lock(ecuPercentListMutex);
+      if ((ecuPercentList.find(ecu)) != ecuPercentList.end())
       {
+        std::cout << "Add to list " << percent <<  std::endl;
         ecuPercentList[ecu].push_back(percent);
-      }
 
-      else
-      {
+      } else {
         auto result = ecuPercentList.insert(std::make_pair(ecu, std::vector<std::string>()));
         result.first->second.push_back(percent);
-      }
-      std::string donePercent = "100";
-      for (const auto &pair : ecuPercentList)
-      {
-        const std::vector<std::string> &vec = pair.second;
-        for (const std::string &str : vec)
-        {
-          if (str == donePercent)
-          {
-            cv.notify_one();
-            doneAdding = true;
-            break;
-          }
-        }
       }
     }
   }
@@ -225,43 +209,43 @@ void fotaConnectApp::handlefifoPercent()
 
 void fotaConnectApp::updateECUPercentList()
 {
-  while (1)
-  {
-    std::unique_lock<std::mutex> guard(ecuPercentListMutex);
-    cv.wait(guard, []
-            { return doneAdding; });
-    for (auto &pair : ecuPercentList)
-    {
-      auto &values = pair.second;
-      for (auto it = values.begin(); it != values.end();)
-      {
-        auto &percent = *it;
-        std::string ecu = pair.first;
-        std::cout << "ECU: " << ecu << ", Percent: " << percent << std::endl;
+  while (1) {
+    if (!ecuPercentList.empty()) {
 
-        if (!fotaDownload::updatePercent(ecu, percent))
-        {
+      auto& firstPair = *ecuPercentList.begin();
+      auto ecu = firstPair.first;
+
+      auto& percentList = firstPair.second;
+      if (!(percentList.empty())) {
+        auto it = percentList.begin() ;
+        auto percent = *it;
+
+        if (!fotaDownload::updatePercent(ecu, percent)) {
           std::cout << "Update percent fail\n";
-        }
+        } else {
+          if (percent == "100") {
+            std::string resetPercent = "0";
+            fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
+            fotaDownload::updatePercent(ecu, resetPercent);
 
-        // Check if percent is 100
-        if (percent == "100")
-        {
-          std::string resetPercent = "0";
-          fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
-          fotaDownload::updatePercent(ecu, resetPercent);
+            std::unique_lock<std::mutex> lock(ecuPercentListMutex);
+            ecuPercentList.erase(ecu);
+            std::cout << "Successfully to update percent for " << ecu << std::endl;
+          } else {
+              std::cout << "Uploaded percent " << percent << std::endl;
+              std::unique_lock<std::mutex> lock(ecuPercentListMutex);
+              
+              auto& firstPair = *ecuPercentList.begin();
+              auto ecu = firstPair.first;
 
-          ecuPercentList.erase(ecu); // Erase the entire ECU entry
-          break;                     // Exit the inner loop as the ECU entry is erased
-        }
-        else
-        {
-          it = values.erase(it); // Erase the current percent and update iterator
+              auto& percentList = firstPair.second;
+              auto it = percentList.begin() ;
+              auto percent = *it;
+              percentList.erase(it);
+              std::cout << "Delected " << percent << std::endl;
+          }
         }
       }
     }
-
-    doneAdding = false;
-    guard.unlock();
   }
 }
