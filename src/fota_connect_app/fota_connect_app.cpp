@@ -227,43 +227,41 @@ void fotaConnectApp::updateECUPercentList()
 {
   while (1)
   {
-    while (doneAdding)
+    std::unique_lock<std::mutex> guard(ecuPercentListMutex);
+    cv.wait(guard, []
+            { return doneAdding; });
+    for (auto &pair : ecuPercentList)
     {
-      std::unique_lock<std::mutex> guard(ecuPercentListMutex);
-      cv.wait(guard, []{ return doneAdding; });
-      for (auto &pair : ecuPercentList)
+      auto &values = pair.second;
+      for (auto it = values.begin(); it != values.end();)
       {
-        auto &values = pair.second;
-        for (auto it = values.begin(); it != values.end();)
+        auto &percent = *it;
+        std::string ecu = pair.first;
+        std::cout << "ECU: " << ecu << ", Percent: " << percent << std::endl;
+
+        if (!fotaDownload::updatePercent(ecu, percent))
         {
-          auto &percent = *it;
-          std::string ecu = pair.first;
-          std::cout << "ECU: " << ecu << ", Percent: " << percent << std::endl;
+          std::cout << "Update percent fail\n";
+        }
 
-          if (!fotaDownload::updatePercent(ecu, percent))
-          {
-            std::cout << "Update percent fail\n";
-          }
+        // Check if percent is 100
+        if (percent == "100")
+        {
+          std::string resetPercent = "0";
+          fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
+          fotaDownload::updatePercent(ecu, resetPercent);
 
-          // Check if percent is 100
-          if (percent == "100")
-          {
-            std::string resetPercent = "0";
-            fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
-            fotaDownload::updatePercent(ecu, resetPercent);
-
-            ecuPercentList.erase(ecu); // Erase the entire ECU entry
-            break;                     // Exit the inner loop as the ECU entry is erased
-          }
-          else
-          {
-            it = values.erase(it); // Erase the current percent and update iterator
-          }
+          ecuPercentList.erase(ecu); // Erase the entire ECU entry
+          break;                     // Exit the inner loop as the ECU entry is erased
+        }
+        else
+        {
+          it = values.erase(it); // Erase the current percent and update iterator
         }
       }
-
-      doneAdding = false;
-      guard.unlock();
     }
+
+    doneAdding = false;
+    guard.unlock();
   }
 }
