@@ -90,11 +90,6 @@ void fotaConnectApp::start()
       if (object_fotaDownload.checkNewestState(name) != Status::OK)
       {
         std::cout << "Firmware already exists.\n";
-        if (object_fotaDownload.resetUpdateFieldFirebase())
-          std::cout << "Reset state OK" << std::endl;
-        else
-          std::cout << "Reset state ERROR\n"
-                    << std::endl;
         if (fotaDownload::updateMCUStatus(ecuName, ECU_StatustoString(ECU_Status::REJECT)))
           std::cout << "Update MCU status OK" << std::endl;
         else
@@ -127,7 +122,6 @@ void fotaConnectApp::start()
           }
         }
 
-        object_fotaDownload.resetUpdateFieldFirebase();
         object_fotaDownload.updateFirmwareList(name);
 
         std::cout << "Sending FIFO\n";
@@ -266,8 +260,11 @@ void fotaConnectApp::handleUpdateTrigger()
   {
     if(fotaDownload::getNameFirmware(name) == Status::OK)
     {
-      std::unique_lock<std::mutex> lock(ecuUpdateListMutex);
-      ecuUpdateList.push(name);
+      {
+        std::unique_lock<std::mutex> lock(ecuUpdateListMutex);
+        ecuUpdateList.push(name);
+      }
+      fotaDownload::resetUpdateFieldFirebase();
     }
   }
 }

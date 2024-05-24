@@ -25,7 +25,7 @@ class fotaDownload
         Status checkExistFile(std::string& fileName, std::string& storagePath);
         bool updateFirmwareList(std::string& newName);
         void setfirmwareMetadata(std::string& firmwareMetadata);
-        bool resetUpdateFieldFirebase();
+        static bool resetUpdateFieldFirebase();
         static bool updateMCUStatus(std::string& ecu, std::string&& status);
         static bool updatePercent(std::string& ecu, std::string& percent);
 };
