@@ -5,10 +5,8 @@
 #include <thread>
 #include <map>
 #include <vector>
-#include <algorithm>
-
-#include <condition_variable>
-#include <atomic>
+#include <queue>
+#include <mutex>
 
 class fotaConnectApp
 {
@@ -33,6 +31,8 @@ class fotaConnectApp
         std::string ECU_StatustoString(ECU_Status status);
         void handlefifoPercent();
         void updateECUPercentList();
+        void handleUpdateTrigger();
         std::map<std::string, std::vector<std::string>> ecuPercentList;
+        std::queue <std::string> ecuUpdateList;
 };
 #endif // include guard

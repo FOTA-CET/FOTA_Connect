@@ -19,7 +19,7 @@ class fotaDownload
         std::string getFirmwareVersion(std::string& nameFirmware);
         std::string firmwareMetadataDir;
     public:
-        Status getNameFirmware(std::string& nameFirmware);
+        static Status getNameFirmware(std::string& nameFirmware);
         Status download(ECU ecu, std::string& fileName, std::string& path);
         Status checkNewestState(std::string& fileName);
         Status checkExistFile(std::string& fileName, std::string& storagePath);

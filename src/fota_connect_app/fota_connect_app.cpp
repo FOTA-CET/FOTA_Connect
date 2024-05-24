@@ -15,8 +15,8 @@
 #include "jsonKey.h"
 
 std::mutex ecuPercentListMutex;
+std::mutex ecuUpdateListMutex;
 bool doneAdding = false;
-std::condition_variable cv;
 
 fotaConnectApp::fotaConnectApp()
 {
@@ -37,6 +37,8 @@ fotaConnectApp::fotaConnectApp()
     fifoPercent = fotaStorage + "/fifoPercent";
     firmwareDir = fotaStorage + "/firmware/";
   }
+  jsonKey::handleFirebaseJson(jsonkeyFile);
+  jsonKey::handleFirebaseToken(tokenFile);
 }
 
 void fotaConnectApp::signalHandler(int signal)
@@ -68,8 +70,15 @@ void fotaConnectApp::start()
   {
     signal(SIGINT, fotaConnectApp::signalHandler);
     signal(SIGTERM, fotaConnectApp::signalHandler);
-    if (object_fotaDownload.getNameFirmware(name) == Status::OK)
+    if (!ecuUpdateList.empty())
     {
+      {
+        std::unique_lock<std::mutex> lock(ecuUpdateListMutex);
+        name = ecuUpdateList.front();
+        std::cout << "new ECU_UPDATE: " << name << std::endl;
+        ecuUpdateList.pop();
+        std::cout << "remove: " << name << std::endl;
+      }
       object_fotaDownload.setfirmwareMetadata(firmwaresMetadataFile);
 
       std::string ecuName = name.substr(0, name.find("_")); // regex
@@ -246,6 +255,19 @@ void fotaConnectApp::updateECUPercentList()
           }
         }
       }
+    }
+  }
+}
+
+void fotaConnectApp::handleUpdateTrigger()
+{
+  std::string name;
+  while(1)
+  {
+    if(fotaDownload::getNameFirmware(name) == Status::OK)
+    {
+      std::unique_lock<std::mutex> lock(ecuUpdateListMutex);
+      ecuUpdateList.push(name);
     }
   }
 }
