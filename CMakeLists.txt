@@ -6,6 +6,7 @@ add_subdirectory(src/cloudUrl)
 add_subdirectory(src/restAdapter)
 add_subdirectory(src/jsonKey)
 add_subdirectory(src/fotaDownload)
+add_subdirectory(src/verification)
 add_subdirectory(src/fota_connect_app)
 
 # External librarries
