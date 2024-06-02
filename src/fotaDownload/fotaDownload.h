@@ -8,21 +8,16 @@
 #include "jsonKey.h"
 #include "cloudUrl.h"
 #include <json/json.h> 
-#include <string.h>
-#include <unistd.h>
 
 enum class Status{OK, ERROR};
 class fotaDownload
 {
-    private:
-        std::string getECUName(std::string& nameFirmware);
-        std::string getFirmwareVersion(std::string& nameFirmware);
-        std::string firmwareMetadataDir;
     public:
+        static std::string firmwareMetadataDir;
+        static std::string getECUName(std::string& nameFirmware);
+        static std::string getFirmwareVersion(std::string& nameFirmware);
         static Status getNameFirmware(std::string& nameFirmware);
         Status download(ECU ecu, std::string& fileName, std::string& path);
-        Status checkNewestState(std::string& fileName);
-        Status checkExistFile(std::string& fileName, std::string& storagePath);
         bool updateFirmwareList(std::string& newName);
         void setfirmwareMetadata(std::string& firmwareMetadata);
         static bool resetUpdateFieldFirebase();

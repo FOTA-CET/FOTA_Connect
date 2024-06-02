@@ -95,19 +95,6 @@ std::string fotaDownload::getFirmwareVersion(std::string& nameFirmware)
     return firmwareVersion;
 }
 
-Status fotaDownload::checkNewestState(std::string& fileName)
-{
-    std::ifstream file(firmwareMetadataDir);
-    Json::Value root;
-    file >> root;
-    if (root.isMember(getECUName(fileName))) {
-    std::string result = root[getECUName(fileName)].asString();
-    if(strcmp(getFirmwareVersion(fileName).c_str(), result.c_str()) != 0) return Status::OK;
-    else return Status::ERROR;
-    }
-    return Status::ERROR;
-}
-
 bool fotaDownload::updateFirmwareList(std::string& newName)
 {
     std::ifstream file(firmwareMetadataDir);
@@ -147,12 +134,4 @@ bool fotaDownload::updatePercent(std::string& ecu, std::string& percent)
     else return false;
 }
 
-Status fotaDownload::checkExistFile(std::string& fileName, std::string& storagePath)
-{
-    std::string filePath = storagePath + fileName;
-    if (access(filePath.c_str(), F_OK) != -1) {
-        return Status::OK;
-    } else {
-        return Status::ERROR;
-    }
-}
+std::string fotaDownload::firmwareMetadataDir = "";
