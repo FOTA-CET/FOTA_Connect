@@ -125,8 +125,6 @@ void fotaConnectApp::start()
           }
         }
 
-        fotaDownload::updateFirmwareList(name);
-
         std::cout << "Sending FIFO\n";
         writeFifoPipe(fifoECU, ecuName);
         writeFifoPipe(fifoFlash, fileName);
