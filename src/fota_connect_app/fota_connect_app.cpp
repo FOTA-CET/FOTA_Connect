@@ -87,7 +87,7 @@ void fotaConnectApp::start()
       std::cout << "Found new firmware:\t";
       std::cout << name << std::endl;
       std::cout << "Checking firmware\n";
-      if (object_fotaDownload.checkNewestState(name) != Status::OK)
+      if (Verification::checkNewestState(name) != Status::OK)
       {
         std::cout << "Firmware already exists.\n";
         if (fotaDownload::updateMCUStatus(ecuName, ECU_StatustoString(ECU_Status::REJECT)))
@@ -110,7 +110,7 @@ void fotaConnectApp::start()
 
         std::string fileName = name + filePath.substr(filePath.length() - 4, 4); // luu y
 
-        if (object_fotaDownload.checkExistFile(fileName, firmwareDir) == Status::ERROR)
+        if (Verification::checkExistFile(fileName, firmwareDir) == Status::ERROR)
         {
           if (object_fotaDownload.download(stringToECU(ecuName), name, filePath) == Status::OK)
           {

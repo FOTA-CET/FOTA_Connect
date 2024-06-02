@@ -2,6 +2,7 @@
 #define __FOTA_CONNECT_APP_
 #include <string>
 #include "cloudUrl.h"
+#include "verification.h"
 #include <thread>
 #include <map>
 #include <vector>
@@ -23,16 +24,16 @@ class fotaConnectApp
         std::string jsonkeyFile;
         std::string tokenFile;
         std::string percentBuf;
-    public:
-        fotaConnectApp();
-        void start();
         std::string ECUtoString(ECU ecu);
         ECU stringToECU(std::string& ecu);
         std::string ECU_StatustoString(ECU_Status status);
+        std::map<std::string, std::vector<std::string>> ecuPercentList;
+        std::queue <std::string> ecuUpdateList;
+    public:
+        fotaConnectApp();
+        void start();
         void handlefifoPercent();
         void updateECUPercentList();
         void handleUpdateTrigger();
-        std::map<std::string, std::vector<std::string>> ecuPercentList;
-        std::queue <std::string> ecuUpdateList;
 };
 #endif // include guard
