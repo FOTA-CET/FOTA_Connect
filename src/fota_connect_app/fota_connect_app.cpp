@@ -35,6 +35,7 @@ fotaConnectApp::fotaConnectApp()
     fifoECU = fotaStorage + "/fifoECU";
     fifoFlash = fotaStorage + "/fifoFirmware";
     fifoPercent = fotaStorage + "/fifoPercent";
+    fifoStatus = fotaStorage + "/fifoStatus";
     firmwareDir = fotaStorage + "/firmware/";
   }
   jsonKey::handleFirebaseJson(jsonkeyFile);
@@ -81,6 +82,8 @@ void fotaConnectApp::start()
       }
       object_fotaDownload.setfirmwareMetadata(firmwaresMetadataFile);
 
+      newUpdateInfor = name;
+
       std::string ecuName = name.substr(0, name.find("_")); // regex
       std::string filePath = firmwareDir + "/" + name;      // concat
 
@@ -122,7 +125,7 @@ void fotaConnectApp::start()
           }
         }
 
-        object_fotaDownload.updateFirmwareList(name);
+        fotaDownload::updateFirmwareList(name);
 
         std::cout << "Sending FIFO\n";
         writeFifoPipe(fifoECU, ecuName);
@@ -152,8 +155,9 @@ std::string fotaConnectApp::ECU_StatustoString(ECU_Status status)
     return "NONE";
   else if (status == ECU_Status::UPDATE)
     return "UPDATE";
-  else
+  else if (status == ECU_Status::REJECT)
     return "REJECT";
+  else return "FAILED";
 }
 
 ECU fotaConnectApp::stringToECU(std::string &ecu)
@@ -227,6 +231,7 @@ void fotaConnectApp::updateECUPercentList()
           std::cout << "Update percent fail\n";
         } else {
           if (percent == "100") {
+            fotaDownload::updateFirmwareList(newUpdateInfor);
             std::string resetPercent = "0";
             fotaDownload::updateMCUStatus(ecu, ECU_StatustoString(ECU_Status::NONE));
             fotaDownload::updatePercent(ecu, resetPercent);
@@ -265,6 +270,29 @@ void fotaConnectApp::handleUpdateTrigger()
         ecuUpdateList.push(name);
       }
       fotaDownload::resetUpdateFieldFirebase();
+    }
+  }
+}
+
+void fotaConnectApp::handlefifoStatus()
+{
+  std::string status;
+  std::string ecu;
+  std::string resetPercent = "0";
+  std::string completedPercent = "100";
+  while (1)
+  {
+    if (readFifoPipe(fifoStatus, statusBuf)) {
+      status = statusBuf.substr(statusBuf.find("_") + 1);
+      ecu = statusBuf.substr(0, statusBuf.find("_"));
+
+      if(!strcmp(status.c_str(), "ESP32"))
+      {
+        fotaDownload::updateFirmwareList(statusBuf);
+        fotaDownload::updatePercent(ecu, completedPercent);
+        fotaDownload::updateMCUStatus(ecu, statusBuf.substr(statusBuf.find("_") + 1));
+        fotaDownload::updatePercent(ecu, resetPercent);
+      }
     }
   }
 }

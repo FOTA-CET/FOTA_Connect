@@ -19,11 +19,14 @@ class fotaConnectApp
         std::string fifoECU;
         std::string fifoFlash;
         std::string fifoPercent;
+        std::string fifoStatus;
         std::string firmwareDir; 
         std::string firmwaresMetadataFile;
         std::string jsonkeyFile;
         std::string tokenFile;
         std::string percentBuf;
+        std::string statusBuf;
+        std::string newUpdateInfor;
         std::string ECUtoString(ECU ecu);
         ECU stringToECU(std::string& ecu);
         std::string ECU_StatustoString(ECU_Status status);
@@ -33,6 +36,7 @@ class fotaConnectApp
         fotaConnectApp();
         void start();
         void handlefifoPercent();
+        void handlefifoStatus();
         void updateECUPercentList();
         void handleUpdateTrigger();
 };

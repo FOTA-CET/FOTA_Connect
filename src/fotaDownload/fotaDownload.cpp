@@ -7,7 +7,7 @@ Status fotaDownload::download(ECU ecu, std::string& fileName, std::string& path)
 
     // Lay metadata respone
     std::string metadataRespone;
-    if(restAdapter::handleRequest(metadataLink, &metadataRespone) != CURLcode::CURLE_OK) throw -1;
+    if(restAdapter::handleRequest(metadataLink, &metadataRespone) != CURLcode::CURLE_OK) Status::ERROR;
 
     // Lay token tu respone cua metadataLink
     std::string tokenDownload = jsonKey::getDownloadToken(metadataRespone);
@@ -22,7 +22,7 @@ Status fotaDownload::download(ECU ecu, std::string& fileName, std::string& path)
 
     // Open the local file for writing response
     FILE *fp = fopen(path.c_str(), "wb");
-    if(restAdapter::handleRequest(firmwareLink, &fileName, fp) != CURLcode::CURLE_OK) throw -1;
+    if(restAdapter::handleRequest(firmwareLink, &fileName, fp) != CURLcode::CURLE_OK) Status::ERROR;
     fclose(fp);
     return Status::OK;        
 }
@@ -46,7 +46,7 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
     delete reader;
 
     if (!parsingSuccessful) {
-        std::cerr << "Failed to parse JSON: " << errs << std::endl;
+        // std::cerr << "Failed to parse JSON: " << errs << std::endl;
         return Status::ERROR;
     }
 
@@ -71,7 +71,7 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
     delete reader_2;
 
     if (!parsingSuccessful_2) {
-        std::cerr << "Failed to parse JSON: " << errs_2 << std::endl;
+        // std::cerr << "Failed to parse JSON: " << errs_2 << std::endl;
         return Status::ERROR;
     }
 
@@ -102,7 +102,7 @@ bool fotaDownload::updateFirmwareList(std::string& newName)
     file >> root;
 
     // Chỉnh sửa dữ liệu
-    root[getECUName(newName)] = getFirmwareVersion(newName);
+    root[fotaDownload::getECUName(newName)] = fotaDownload::getFirmwareVersion(newName);
 
     // Lưu lại các thay đổi vào tệp JSON
     std::ofstream outFile(firmwareMetadataDir);
