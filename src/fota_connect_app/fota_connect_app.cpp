@@ -287,12 +287,7 @@ void fotaConnectApp::handlefifoStatus()
       std::cout << ecu << std::endl;
       std::cout << status << std::endl;
 
-      if(!strcmp(ecu.c_str(), "ESP32"))
-      {
-        fotaDownload::updatePercent(ecu, completedPercent);
-        fotaDownload::updateMCUStatus(ecu, statusBuf.substr(statusBuf.find("_") + 1));
-        fotaDownload::updatePercent(ecu, resetPercent);
-      }
+      fotaDownload::updateMCUStatus(ecu, statusBuf.substr(statusBuf.find("_") + 1));
     }
   }
 }
