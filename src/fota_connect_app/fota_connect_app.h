@@ -20,6 +20,7 @@ class fotaConnectApp
         std::string fifoFlash;
         std::string fifoPercent;
         std::string fifoStatus;
+        std::string fifoReset;
         std::string firmwareDir; 
         std::string firmwaresMetadataFile;
         std::string jsonkeyFile;
@@ -39,5 +40,6 @@ class fotaConnectApp
         void handlefifoStatus();
         void updateECUPercentList();
         void handleUpdateTrigger();
+        void handleFactoryResetTrigger();
 };
 #endif // include guard

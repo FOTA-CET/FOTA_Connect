@@ -83,6 +83,35 @@ Status fotaDownload::getNameFirmware(std::string& nameFirmware)
     return Status::OK;
 }
 
+Status fotaDownload::getFactoryResetName(std::string& factoryResetName)
+{
+    std::string urlFIRMWARE = "https://";
+    urlFIRMWARE += jsonKey::getProjectID();
+    urlFIRMWARE += "-default-rtdb.firebaseio.com/.json?auth=";
+    urlFIRMWARE += jsonKey::getToken();
+
+    std::string metadataRespone;
+    if(restAdapter::handleRequest(urlFIRMWARE, &metadataRespone) != CURLcode::CURLE_OK) throw -1;
+
+    Json::CharReaderBuilder builder;
+    Json::CharReader* reader = builder.newCharReader();
+    Json::Value root;
+    std::string errs;
+
+    bool parsingSuccessful = reader->parse(metadataRespone.c_str(), metadataRespone.c_str() + metadataRespone.size(), &root, &errs);
+    delete reader;
+
+    if (!parsingSuccessful) {
+        // std::cerr << "Failed to parse JSON: " << errs << std::endl;
+        return Status::ERROR;
+    }
+
+    factoryResetName = root["ECU_RESET"].asString();
+
+    if(strcmp(factoryResetName.c_str(),"NONE") == 0) return Status::ERROR;
+    else return Status::OK;
+}
+
 std::string fotaDownload::getECUName(std::string& nameFirmware)
 {
     std::string ECUname = nameFirmware.substr(0,nameFirmware.find('_'));
@@ -113,12 +142,18 @@ bool fotaDownload::updateFirmwareList(std::string& newName)
 
 void fotaDownload::setfirmwareMetadata(std::string& firmwareMetadata)
 {
-    this->firmwareMetadataDir = firmwareMetadata;
+    firmwareMetadataDir = firmwareMetadata;
 }
 
 bool fotaDownload::resetUpdateFieldFirebase()
 {
     if(restAdapter::writeFirebase(".json", "ECU_UPDATE", "NONE")) return true;
+    else return false;
+}
+
+bool fotaDownload::resetFactoryResetFieldFirebase()
+{
+    if(restAdapter::writeFirebase(".json", "ECU_RESET", "NONE")) return true;
     else return false;
 }
 

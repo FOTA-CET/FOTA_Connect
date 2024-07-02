@@ -17,10 +17,12 @@ class fotaDownload
         static std::string getECUName(std::string& nameFirmware);
         static std::string getFirmwareVersion(std::string& nameFirmware);
         static Status getNameFirmware(std::string& nameFirmware);
+        static Status getFactoryResetName(std::string& factoryResetName);
         Status download(ECU ecu, std::string& fileName, std::string& path);
         static bool updateFirmwareList(std::string& newName);
-        void setfirmwareMetadata(std::string& firmwareMetadata);
+        static void setfirmwareMetadata(std::string& firmwareMetadata);
         static bool resetUpdateFieldFirebase();
+        static bool resetFactoryResetFieldFirebase();
         static bool updateMCUStatus(std::string& ecu, std::string&& status);
         static bool updatePercent(std::string& ecu, std::string& percent);
 };

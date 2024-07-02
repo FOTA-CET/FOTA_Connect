@@ -36,10 +36,13 @@ fotaConnectApp::fotaConnectApp()
     fifoFlash = fotaStorage + "/fifoFirmware";
     fifoPercent = fotaStorage + "/fifoPercent";
     fifoStatus = fotaStorage + "/fifoStatus";
+    fifoReset = fotaStorage + "/fifoReset";
     firmwareDir = fotaStorage + "/firmware/";
   }
+
   jsonKey::handleFirebaseJson(jsonkeyFile);
   jsonKey::handleFirebaseToken(tokenFile);
+  fotaDownload::setfirmwareMetadata(firmwaresMetadataFile);
 }
 
 void fotaConnectApp::signalHandler(int signal)
@@ -64,9 +67,6 @@ void fotaConnectApp::start()
 
   std::cout << "Starting FOTA CONNECT" << std::endl;
 
-  jsonKey::handleFirebaseJson(jsonkeyFile);
-  jsonKey::handleFirebaseToken(tokenFile);
-
   while (1)
   {
     signal(SIGINT, fotaConnectApp::signalHandler);
@@ -80,7 +80,6 @@ void fotaConnectApp::start()
         ecuUpdateList.pop();
         std::cout << "remove: " << name << std::endl;
       }
-      object_fotaDownload.setfirmwareMetadata(firmwaresMetadataFile);
 
       newUpdateInfor = name;
 
@@ -288,6 +287,25 @@ void fotaConnectApp::handlefifoStatus()
       std::cout << status << std::endl;
 
       fotaDownload::updateMCUStatus(ecu, statusBuf.substr(statusBuf.find("_") + 1));
+    }
+  }
+}
+
+void fotaConnectApp::handleFactoryResetTrigger()
+{
+  std::string factoryResetECUName;
+  std::string newECUListUpdate;
+  while(1)
+  {
+    if(fotaDownload::getFactoryResetName(factoryResetECUName) == Status::OK)
+    {
+      std::cout << "Factory Reset: " << factoryResetECUName << std::endl;
+      {
+        newECUListUpdate = factoryResetECUName + "_v1.0";
+        writeFifoPipe(fifoReset, factoryResetECUName);
+        fotaDownload::updateFirmwareList(newECUListUpdate);
+      }
+      fotaDownload::resetFactoryResetFieldFirebase();
     }
   }
 }
